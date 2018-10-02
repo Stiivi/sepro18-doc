@@ -1,0 +1,25 @@
+\lstset{ % general command to set parameter(s)
+    basicstyle=\footnotesize\ttfamily, % print whole listing small
+    keywordstyle=\color{black}\bfseries\underbar,
+    identifierstyle=,
+    breaklines=true,
+    % commentstyle=\color{white}, 
+    % stringstyle=\ttfamily, 
+    basewidth=0.45em,
+    showstringspaces=false}
+
+\lstdefinelanguage{pseudo}
+{
+	morekeywords={for,do,if,then},
+	sensitive=false,
+	morecomment=[l]{\#},
+	morestring=[b]"
+}
+
+\lstdefinelanguage{sepro}
+{
+	morekeywords={act,react,where,do,in},
+	sensitive=false,
+	morecomment=[l]{\#},
+	morestring=[b]" 
+}

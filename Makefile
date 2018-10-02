@@ -10,7 +10,7 @@ SRC = 00_title.md \
 
 TARGET_NAME = Sepro
 PANDOC = pandoc
-IFORMAT = markdown
+IFORMAT = markdown+backtick_code_blocks
 MATHJAX = "http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
 FLAGS = --standalone \
 		--highlight-style pygments
@@ -27,11 +27,16 @@ HTML_FLAGS = --toc \
 			 -c "css/bootstrap.min.css"
 
 PDF_FLAGS = --default-image-extension=pdf \
-			--variable classoption=twocolumn \
+			-V classoption=onecolumn \
 			-V listings \
 			-V papersize=a4paper \
 			-V documentclass:article \
+			-H "$(STYLE_DIR)/listings.tex" \
+			--listings \
 			$(FLAGS)
+
+#			-H "$(STYLE_DIR)/make-code-scriptsize.tex" \
+#			--highlight-style=espresso \
 
 OUTPUT_DIR = docs
 
@@ -79,6 +84,9 @@ $(OUTPUT_DIR)/%.html: $(SRC_DIR)/%.md $(FILTER) html_resources
 
 pdf: $(FILTER) dirs
 	$(PANDOC) -f $(IFORMAT) $(PDF_FLAGS) -o $(OUTPUT_DIR)/$(TARGET_NAME).pdf $(ALL_SRC)
+
+tex: $(FILTER) dirs
+	$(PANDOC) -f $(IFORMAT) $(PDF_FLAGS) -o $(OUTPUT_DIR)/$(TARGET_NAME).tex $(ALL_SRC)
 
 epub: $(FILTER) dirs
 	$(PANDOC) -f $(IFORMAT) -t epub3 $(FLAGS) -o $(OUTPUT_DIR)/$(TARGET_NAME).epub $(ALL_SRC)

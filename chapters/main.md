@@ -55,7 +55,7 @@ the model or a type of component.
 
 Definition
 
-: Model is a tuple $(S, T, A, G)$ where $S$ is a set of symbols, $T$ is a
+: Model is a tuple $M:=(S, T, A, G)$ where $S$ is a set of symbols, $T$ is a
 symbol type table, $A$ is a collection of actuators and $G$ is a graph
 representing system's state.
 
@@ -82,16 +82,18 @@ $s^\text{slot}\in S$ and $o\in O$
 Definition
 
 : Object's qualitative state is a set of symbols $\{t_1, t_2, ..., t_n\} | t_i \in S^\text{tag}$.
-
-_Slot_ is a relational property of an objects that references other objects.
-Slot is a label of an edge of the object graph. 
+We will write it as $\text{tags}(o)$
 
 ![Object tags](images/object-tags){width=20%}
+
+_Slot_ is a relational property of an objects that references other objects.
+Slot is a label of an edge of the object graph. We will use the letter $s$ to
+denote a slot.
 
 Proposition
 
 : We say that object $o$ has slots $\{s_1, s_2, ..., s_n\}$ if there exist
-edges $\{o,s_i\}$.
+edges $\{o,s_i\}$. We will write it as $\text{slots}(o)$
 
 ![Object slots](images/object-slots){width=25%}
 
@@ -109,13 +111,33 @@ the object $o$.
 
 ![Local context](images/local-context)
 
+Before we move on with defition of other concepts, we need to define
+how objects in the graph can be reffered to. We need to be able to refer to an
+object within the local context relatively to the object being considered for
+evalutaion. 
+
+Definition
+
+: _Subject mode_ is a relative reference to an object in the graph given
+initial object. 
+$$m:=\begin{cases}\text{direct}\\\text{indirect}(s^\text{slot})\end{cases}$$
+
+_Subject mode_ is used to determine which object will be used for pattern
+matching in the selector or for applying state transitions. We call the object
+that is to be used for evaluation _effective subject_. _Direct_ subject
+mode means that the _effective subject_ is the object being evaluated is to be
+considered. _Indirect_ subject mode means that the _effective subject_ is the
+object which is terminal vertex $o_t$ of the relationship
+$\{s^\text{slot},o_t\}$ where the initial vertex is the object being evaluated.
+
 
 # Model Dynamics
+
 
 The main concepts for the model dynamics are:
 
 - _Actuator_ is a description of an atomic state transition of objects within the graph
-  matching a pattern. It can be thought as an graph rewrite rule.
+  matching a pattern. 
 - _Selector_ is a match pattern or objects subject to transition
 - _Transition/Modifier_ is a description of state change affects either object’s state or local
   relationships
@@ -130,18 +152,33 @@ therefore be open for interference - which is desired by design.
 
 ## Actuators
 
-Actuators can be thought as declarations of graph rewrite rules combined with object state
-transitions. They are applied to the whole graph[^2].
+Actuators can be thought as declarations of graph rewrite rules combined with
+object state transitions. They are applied to the whole graph[^2]. We assume
+that all actuators operate on all objects at once.[^3]
 
 [^2]: Here we assume only lowest level of the Sepro model without a constraints
   level. Higher levels as well as constraints are out of scope of this article.
 
-The universe graph can be modified either through a state of an
-object or a state of two object in their hypothetical interaction.
+[^3]: This is idealized assumption which has technical implementation
+  limitations that we will discuss later. 
 
-_Unary Actuator_ describes transition of object’s state and local relationships based on previous
-object’s state. Only object that matches a pattern or it's direct neighbours
-can be affected.
+The graph can be modified either through a state of a single object or a state
+of two object in their hypothetical interaction.
+
+For observation and controlled simulation purposes the actuators have also a
+_control signallig_ associated with them. We will discuss the control mechanism
+later.
+
+_Unary Actuator_ describes transition of object’s state and local relationships
+based on previous object’s state. Only object that matches a pattern or it's
+direct neighbours can be affected.
+
+Language representation of the actuator is:
+
+```
+WHERE ... DO ...
+```
+
 
 ![Unary Actuator](images/actuator-unary){width=30%}
 
@@ -150,11 +187,43 @@ cartesian product of two objects matching two selector patterns. Either of two
 objects can undergo transition based on state of any of the objects in the
 cartesian product tuple.
 
+Definition
+
+: _Unary actuator_ is a tuple $(\sigma, T^1, \Gamma)$ where $\sigma$ is a
+selector and $T^1$ is unary transition. $\Gamma$ is a control signal.
+
+Model language declaration of a unary actuator is:
+
+```
+ACT actuator_name
+    WHERE (selector_patterns)
+    DO unary_transitions
+```
+
+
+
 ![Binary Actuator](images/actuator-binary){width=30%}
 
 Binary actuator is the only way how a new connections to potentially unrelated
 objects (no direct reference) might happen.
 
+Definition
+
+: _Binary actuator_ is a tuple $(\sigma_l, \sigma_r, m_l\rightarrow T^2_l, m_r\rightarrow T^2_r, \Gamma)$
+where $\sigma_l$ and $\sigma_r$ are left and right selector respectively,
+$T^2_l$ and $T^2_r$ are left and right binary transitions on effective subject
+specified by left subject mode $m_l$ and right subject mode $m_r$ respectively.
+$\Gamma$ is a control signal.
+
+
+Model language declaration of a binary actuator is:
+
+```
+REACT actuator_name
+    WHERE (selector_patterns)
+        ON (selector_patterns)
+        DO binary_transitions
+```
 
 
 ### Selector
@@ -175,24 +244,73 @@ The predicates can tets for:
 - Graph contains an edge from a specific slot
 - Graph does not contain an edge from a specific slot
 
-### State Modifiers
 
-State modifiers (further just _modifiers_) are descriptions of graph state
-transitions that operate on objects and their neighbors within their local
-context. Assumed modifiers are non-divisable primitives we assume are
-sufficient for any state transformations with their combined composition.
+Definition
 
-The state modifiers are:
+: _Selector_ is a patter description
+$$\sigma:=\begin{cases}\text{all}\\\text{match}(m\rightarrow \Pi)\end{cases}$$
+where $m$ is a subject mode and $\Pi$ is a selector pattern. We say that object
+matches a selector when the selector is $\text{all}$ or when the _effective
+subjects_ of the object match all the selector patterns $\Pi$.
+
+Definition
+
+: _Selector pattern_ $\Pi$ is a tuple of mappings $(S^t\rightarrow p, S^s\rightarrow p)$ where $p$ is symbol's presence:
+$$p:=\begin{cases}\text{present}\\\text{absent}\end{cases}$$. An object matches
+the selector pattern if all of the following are true: 
+$$
+\begin{aligned}
+& \ \{s^t|s^t\rightarrow \text{present}\} \subset \text{tags}(o) \\
+\wedge & \ \text{tags}(o) \cap \{s^t|s^t\rightarrow \text{absent}\}=\emptyset \\
+\wedge & \ \{s^s|s^s\rightarrow \text{present}\} \subset \text{slots}(o) \\
+\wedge & \ \text{slots}(o) \cap \{s^s|s^s\rightarrow \text{absent}\}=\emptyset\end{aligned}
+$$
+
+The language representation of the selector pattern is either a word `ALL` or a
+list of symbols. Assume we have symbols `open`, `empty` referring to tags and
+symbol `next` referring to a slot. For example the selector in the following
+actuator matches all objects that have tag `open` set, have no `empty` tag set
+and there exists a relationship at slot `next` from the object:
+
+```
+WHERE (open, !empty, next) ...
+```
+
+All symbols are considered to be in direct subject mode by default. Indirect
+subject mode in the selector can be represented by object qualifier "dot"
+operator as `indirection.symbol`[^4]. For example:
+
+[^4]: Unlike in common general purpose programming languages, the indirection
+  can not be chained as in `deep.deeper.deepest.symbol` due to the _local
+  context_ constraint. 
+
+```
+WHERE next.open ...
+```
+
+The above matches an object where an object referred through slot `next` has a
+tag `open` set.
+
+### State Transitions
+
+State transitions (further just _transitions_) are descriptions of qualitative
+changes of the object graph. They operate on objects and their neighbors within
+their local context. Proposed transitions are non-divisable primitives we assume
+being sufficient for any desired graph state transformations when composition
+of the transitions is used.
+
+There are two qualitative state modifiers:
 
 - `SET` - associate a set of tags with an object
   $$result=\text{object tags}\cup \text{modifier tags}$$
 - `UNSET` - disassociate set of tags with an object
   $$result = \text{object tags} - \text{modifier tags}$$
 
-Graph edge modifiers: 
+There are two graph edge modifiers: 
 
 - `BIND` - bind a slot of an effective object
 - `UNBIND` - unbind a slot of an effective object
+
 
 Binary modifier have limited ability to modify the state by design. Unbinding
 in a binary modifier can be achieved by a combination of binary state change
@@ -205,18 +323,195 @@ composed of multiple transitions that propagate through the network.
 Susceptibility to being affected by other actuators along the way is intended
 design feature.
 
+## Transition Modes
+
+The possible combinations of transitions are limited.
+
 # Simulation
 
-Actuator principles:
+The simulation is virtually indefinite iterative evaluation of the model's
+actuators that operate on system's state.
 
-Order of applying actuators is not predetermined. Order of actuators being
-applied might affect some simulations
+Given inspiration in biochemistry, the nature of the Sepro system does not
+impose any evaluation order of the actuators and selection order of objects.
+However, to be able to perform the simulation on Von-Neumann computer
+architecture which is sequential, we need to define the order of events in the
+simulation, and understand it’s impact on the simulation result. The emphasis
+is more on the explicit impact description than on the actual order definition.
+The evaluation order is a meta-problem that we are not trying to solve yet, but
+we need to propose few solution to start with.
+
+Assumption
+
+: In this evolutionary step of the system we consider the time to be unified
+globally. That means that time is the same for every entity of the system.
+
+Having global time of discrete nature, we can refer to each state by global
+time reference _t_ and can say that state of the system at time _t_ is
+described as a state of objects and bindings at time _t_.
+
+Definition
+
+: Simlation step $\Delta$ is an approximation of system's transition in form of
+a function
+$$G^{t+1}=\Delta(G^t, M)$$
+where $G^0$ is the graph $G$ from the model $M$. 
+
+We have to keep in mind that the $\Delta$ is not a true simulation mechanism,
+just an approximation. It is so due to the assumption of global time and potential
+effects of linearization.
+
+During the simulation step the following happens:
+
+* Every unary actuator is tested against each object and the associated unary
+    transition is applied to the objects that match the actuator's selector.
+* For every binary actuator a cartesian product of objects matching left
+    selector and right selector is determined and binary transitions are
+    applied to their respective effective subjects.
+* Control signals are gathered and provided to the simulation controller or
+    observer.
+    
+As mentioned above, the order how the actuators, their evaluation and
+application is  executed is left to the concrete implementation of the
+simulation engine. The decision whether the simulation is performed in parallel
+and what kind of parallelism is used is an implementation choice of the
+simulation engine. It has to be remembered that, as mentioned before, the simulation might be
+highly sensitive to the order of execution. 
+
+## "Sequential Scan" Simulation Method
+
+Here we propose a simple, quite primitive yet straightforward simulation
+method: _Sequential scans with actuators first_. This method performs the
+_simulation step_ in a single thread and considers the time to be
+system-global.
+
+The simulation step can be described in a pseudo-language as:
+
+```
+	FOR actuator IN unary actuators DO:
+	    evaluate unary actuator
+	
+	FOR actuator IN binary actuators DO:
+	    evaluate binary actuator
+```
+
+We serialise the simulation process by applying the transitions of the system
+in the order as given by a lazy selection algorithm described below. The method
+is analogous to vertical and horizontal line scan of a CRT screen where an
+object can be seen as a point on the screen and where the beam traverses the
+points in fixed pattern. One simulation step can be modelled by a single full
+scan of the whole screen. Once the beam touches a point on the screen, it does
+not go back within the same full screen scan.
+
+The unary actuator scan is depicted in the following figure:
+
+![Unary scan](images/simulation-unary-scan){width=25%}
+
+The evaluation of unary actuator is a single pass through the lazy selection of
+objects matching actuator’s predicates:
+
+```
+selection := objects matching actuator selector
+	
+FOR object IN selection DO:
+    IF object matches selector:
+        apply actuator transitions to object
+```
+
+The binary actuator "scans" a cartesian product of the "left" and "right"
+selector of the actuator:
+
+![Binary actuator - scan of cartesian
+product](images/simulation-binary-scan){width=30%}
+
+
+The evaluation of the binary selector is as follows:
+
+```pseudo
+selection L := GET objects matching left selector of actuator
+selection R := GET objects matching right selector of actuator
+
+FOR left IN L DO:
+    FOR right IN R DO:
+        IF left does not match left selector:
+            CONTINUE
+        IF right does not match right selector:
+            CONTINUE
+
+        apply transition to left and right
+```
+
+The inner conditions are to filter out objects that might have been already
+modified in the scan pass and might not fit the selection predicates any more.
+
+![Binary actuator - skipping](images/simulation-binary-skip){width=35%}
+
+### Known Issues
+
+The scan method described above has two major factors that influence the the
+simulation's outcome:
+
+* Order in which actuators are evaluated.
+* Order in which the objects are provided to the filter.
+
+Let’s consider two actuators A and B evaluated in the same order: first A then
+B. If an object does not match predicates of A, matches predicate for B and
+actuator B modifies the object in a way that it would match actuator A, the
+object is not evaluated again with the actuator A. We will call this _actuator
+order error_.
+
+Let’s consider order of objects ${o_1,o_2,\ldots,o_n}$ and an actuator that by
+evaluating $o_1$ modifies $o_2$ in a way that $o_3$ will not match the actuator’s
+predicate (will lose candidacy, will not be visited). If we provide another
+order, for example reverse order, then $o_2$ will be visited. We will call this
+_object selection order error_.
+
+Here we suggest that how the simulation sub-steps are ordered must be known
+fact to the simulator user. 
+
+For further research, it might be interesting to further investigate effect of
+ordering to the outcome of certain models. For example:
+
+- Randomization of the actutors, including unary and binary.
+- Randomization of the objects for each iteration and actuator.
+- Object-first pass: the outer loop is object loop, the inner loops are
+    actuator loops.
+
+In a potential virtual laboratory where one might test different kinds of
+ordering the controller might provide mechanisms to compare different outcomes
+based on the orderings. This investigation is out of scope of this article,
+left as an exercise to the reader.
+
+
+### Parallel Evaluation
+
+Massively parallel evaluation is the ultimate goal of the system as it closely
+mimics the behaviour in the real world. By _massively parralel_ we mean one
+processing unit per object per actuator observing the relevant context of the
+unit-associateid object.
+
+Simplified parallelism can be achieved by splitting the object graph into
+smaller parts, performing partial evalutaions and then consolidating the
+results. This is a whole are to be explored as it opens many questions, such
+as:
+
+* How to synchronise the simulation states?
+* How to resolve potential modifier-predicate order conflicts?
+* How to consolidate conflicting modifications?
+* How the consolidation method affects the outcome of the simulation?
+* Which parameters of the simulation configuration affect potential errors of
+  the simulation and in which way?
 
 ## Control Signaling 
 
-The language gives a possibility to provide signals to the simulator. There are
-three kinds of signals: _notify_, _trap_ and _halt_. The _notify_ and _trap_
-signals can carry a set of tags associated with them to provide more
+The language gives a possibility to provide signals to the simulator. Signals
+are triggered together with activation of the associated actuator. The control
+signalling has no direct effect on the model and it's interpretation is given
+by the simulator. It can be thought as an action to communicate
+unidirectionally with the observer.
+
+There are three kinds of signals: _notify_, _trap_ and _halt_. The _notify_ and
+_trap_ signals can carry a set of tags associated with them to provide more
 information to the signal handlers.
 
 - `NOTIFY` signals to the simulator and expectes no interruption of the
@@ -233,4 +528,11 @@ information to the signal handlers.
     been reached and resuming the simulation might affect the result in
     non-meaningful way.
 
+# Language
+
+Describe language here
+
 # Example: Linker
+
+Describe the "Linker" example here
+
