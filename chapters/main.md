@@ -55,15 +55,16 @@ the model or a type of component.
 
 Definition
 
-: Model is a tuple $M:=(S, T, A, G)$ where $S$ is a set of symbols, $T$ is a
-symbol type table, $A$ is a collection of actuators and $G$ is a graph
-representing system's state.
+: Model is a tuple $M:=(S, S\rightarrow t, A, G)$ where $S$ is a set of
+symbols, $S\rightarrow t$ is a symbol type table where $t$ is a symbol type,
+$A$ is a collection of actuators and $G$ is a graph representing system's
+state.
 
 ![Model](images/model)
 
 Definition
 
-: Symbol table $T$ is a mapping between a symbol and it's type:
+: Symbol table $\S\rightarrow t$ is a mapping between a symbol and it's type:
 $$T:=s\rightarrow t|s\in{S},t=\begin{cases}\text{tag}\\\text{slot}\\\text{actuator}\end{cases}$$
   We say that a symbol $s^t$ is of type $t$ when $s^t\in{S}\wedge T(s^t)=t$.
   Set of symbols $S^t$ is a set where each symbol is of type $t$.
@@ -81,8 +82,8 @@ $s^\text{slot}\in S$ and $o\in O$
 
 Definition
 
-: Object's qualitative state is a set of symbols $\{t_1, t_2, ..., t_n\} | t_i \in S^\text{tag}$.
-We will write it as $\text{tags}(o)$
+: Object's qualitative state is a set of symbols $\{s^t_1, s^t_2, ..., s^t_n\}
+| s^t_i \in S^\text{tag}$.  We will write it as $\text{tags}(o)$
 
 ![Object tags](images/object-tags){width=20%}
 
@@ -92,8 +93,8 @@ denote a slot.
 
 Proposition
 
-: We say that object $o$ has slots $\{s_1, s_2, ..., s_n\}$ if there exist
-edges $\{o,s_i\}$. We will write it as $\text{slots}(o)$
+: We say that object $o$ has slots $\{s^s_1, s^s_2, ..., s^s_n\}$ if there exist
+edges $\{o,s^s_i\}$. We will write it as $\text{slots}(o)$
 
 ![Object slots](images/object-slots){width=25%}
 
@@ -189,8 +190,9 @@ cartesian product tuple.
 
 Definition
 
-: _Unary actuator_ is a tuple $(\sigma, T^1, \Gamma)$ where $\sigma$ is a
-selector and $T^1$ is unary transition. $\Gamma$ is a control signal.
+: _Unary actuator_ is a tuple $(\sigma, m\rightarrow T^1, n)$ where
+$\sigma$ is a selector, $m$ is subject mode and $T^1$ is unary transition. $n$ is a control
+signal (as in "notification").
 
 Model language declaration of a unary actuator is:
 
@@ -213,7 +215,10 @@ Definition
 where $\sigma_l$ and $\sigma_r$ are left and right selector respectively,
 $T^2_l$ and $T^2_r$ are left and right binary transitions on effective subject
 specified by left subject mode $m_l$ and right subject mode $m_r$ respectively.
-$\Gamma$ is a control signal.
+$n$ is a control signal.
+
+We would use the term _hand_ to refer to the left or right selector or
+transition. 
 
 
 Model language declaration of a binary actuator is:
@@ -255,9 +260,14 @@ subjects_ of the object match all the selector patterns $\Pi$.
 
 Definition
 
-: _Selector pattern_ $\Pi$ is a tuple of mappings $(S^t\rightarrow p, S^s\rightarrow p)$ where $p$ is symbol's presence:
-$$p:=\begin{cases}\text{present}\\\text{absent}\end{cases}$$. An object matches
-the selector pattern if all of the following are true: 
+: _Symbol presence_ $p$ is a case
+$$p:=\begin{cases}\text{present}\\\text{absent}\end{cases}$$.
+
+
+Definition
+
+: _Selector pattern_ $\Pi$ is a tuple of mappings $(S^t\rightarrow p, S^s\rightarrow p)$ where $p$ is symbol's presence.
+An object matches the selector pattern if all of the following are true: 
 $$
 \begin{aligned}
 & \ \{s^t|s^t\rightarrow \text{present}\} \subset \text{tags}(o) \\
@@ -265,6 +275,7 @@ $$
 \wedge & \ \{s^s|s^s\rightarrow \text{present}\} \subset \text{slots}(o) \\
 \wedge & \ \text{slots}(o) \cap \{s^s|s^s\rightarrow \text{absent}\}=\emptyset\end{aligned}
 $$
+
 
 The language representation of the selector pattern is either a word `ALL` or a
 list of symbols. Assume we have symbols `open`, `empty` referring to tags and
@@ -295,22 +306,169 @@ tag `open` set.
 
 State transitions (further just _transitions_) are descriptions of qualitative
 changes of the object graph. They operate on objects and their neighbors within
-their local context. Proposed transitions are non-divisable primitives we assume
-being sufficient for any desired graph state transformations when composition
-of the transitions is used.
+their local context.  Proposed transitions are non-divisable primitives we
+assume being sufficient for any desired graph state transformations when
+composition of the transitions is used.
 
-There are two qualitative state modifiers:
+The concrete object that is subject to transition is called _effective
+ subject_ of the transition and is determined by the subject mode in the
+actuator.
 
-- `SET` - associate a set of tags with an object
-  $$result=\text{object tags}\cup \text{modifier tags}$$
-- `UNSET` - disassociate set of tags with an object
-  $$result = \text{object tags} - \text{modifier tags}$$
+There are two kinds of transitions: qualitative state of an object and
+qualitative state of the graph. The first one operates on object's qualitative
+properties - _tags_ and the later operates on graph's relationships.
+The tags can be associated or disassociated from an object. The relationships
+can be _bound_ and _unbound_ within the local context of the effective subject.
 
-There are two graph edge modifiers: 
+### Unary Transition
 
-- `BIND` - bind a slot of an effective object
-- `UNBIND` - unbind a slot of an effective object
+Definition
 
+: _Unary transition_ is a tuple
+$T^1=(S^\text{tag}\rightarrow p,S^\text{slot}\rightarrow \mu^1)$ where the
+first element is a qualitative transition of the effective subject and the
+second element is a graph edge change from the effective subject to effective
+target as described by the unary target specifier $\mu^1$.
+
+If the $p = \text{present}$ then the $S^\text{tag}$ is associated with the
+effective subject.
+If the $p = \text{absent}$ then the $S^\text{tag}$ is dissociated with the
+effective subject. [^6]
+
+[^6]: Alternative and more readable or understandable way of specifying which
+  tags are to be associated or disassociated with an object would be to use two
+  sets of tags: _set_ and _unset_. However if the intersection of the sets is
+  non-empty, the behaviour would be undefined. Using the mapping we prevent
+  such situation from happening by design.
+
+Definition
+
+: _Unary target specifier_ $\mu^1$ is a case:
+$$\mu^1:=\begin{cases}
+\text{unbind}\\
+\text{subject}\\
+\text{in\_subject}(S^\text{slot})\\
+\text{indirect}(S^\text{slot},S^\text{slot})\\
+\end{cases}$$
+The $\text{unbind}$ case specifies that the edge from the effective subject is
+to be removed. $\text{subject}$ denotes that the target is the effective
+subject itself, therefore creating a self-loop. Effective target of
+the $\text{in\_subject}$ case is the object referred by the specified slot from
+the effective subject. The $\text{indirect}$ effective target is an object
+reffered to by the path of two slots from the effective subject.
+
+The above gives us the following potential subject mode combinations for
+creating an edge using unary actuator. Let's assume the effective subject
+having slots $s$ and $t$, and the object referred to by slot $s$ having slot
+$i$, object referred to by slot $t$ having slot $w$.
+
+-----------------------------------------------------------------------------
+Effective             Effective                Edge
+subject               target
+--------------------- ------------------------ ------------------------------
+$\text{direct}$       $\text{none}$                 _removed_
+
+$\text{direct}$       $\text{subject}$         $s\rightarrow \text{self}$
+
+$\text{direct}$       $\text{in\_subject}(t)$  $s\rightarrow t$
+
+$\text{direct}$       $\text{indirect}(t, w)$  $s\rightarrow t.w$
+
+$\text{indirect}(i)$  $\text{none}$                 _removed_
+
+$\text{indirect}(i)$  $\text{subject}$         $s.i\rightarrow \text{self}$
+
+$\text{indirect}(i)$  $\text{in\_subject}(t)$  $s.i\rightarrow t$
+
+$\text{indirect}(i)$  $\text{indirect}(t, w)$  _not atomic_
+-----------------------------------------------------------------------------
+
+Constraint
+
+: Indirection of effective subject and effective target is not permitted, as
+the operation can be achieved by by composing two separate actuators: one for
+pulling indirect object closer to the effective subject and second for
+performing indirect bind to the pulled-in subject and unbinding the subject.
+
+### Binary Transition
+
+Binary transition is analogous to the unary transition with one difference: the
+effective target specifier can specify one of the two "hands" of the selector.
+
+Effective subject of the binary transition is the subject selected by
+corresponding hand selector. For the left hand selector $\sigma_l$ the
+corresponding transition is $T^2l$ and the effective subject of the transition
+is the subject determined by $\sigma_l$. Analogously for the right hand
+transition the effective subject is determined by the $\sigma_r$.
+
+Transition hand can affect only qualities of the effective subject on the same
+hand similarly to unary transition. Although transition hand can have effective
+target from the same hand or from the other hand. This allows us to create new
+relationships between objects that are from disconnected parts of the graph. We
+refer to the effective subject from the other selector simply as $\text{other}$.
+
+Definition
+
+: _Binary transition_ is a tuple
+$T^1=(S^\text{tag}\rightarrow p,S^\text{slot}\rightarrow \mu^2)$ where the
+first element is a qualitative transition of the effective subject and the
+second element is a graph edge change from the effective subject to effective
+target as described by the binary target specifier $\mu^2$.
+
+The first element of the tuple for tags is the same as the mapping in the unary
+transition. 
+
+Definition
+
+: _Binary target specifier_ $\mu^2$ is a case:
+$$\mu^1:=\begin{cases}
+\text{unbind}\\
+\text{other}\\
+\text{in\_other}(S^\text{slot})\\
+\end{cases}$$
+The $\text{unbind}$ case specifies that the edge from the effective subject is
+to be removed. $\text{other}$ denotes that the target is the effective subject
+of the other hand.  Effective target of the $\text{in\_other}$ case is the
+object referred by the specified slot from the other hand's effective subject.
+
+Note that there is no indirection in the binary transition as it can be
+achieved by composing multiple transitions. Neither there is possibility to
+create binding within the same effective subject as it can be achieved by
+composing as well [^7].
+
+[^7]: This is a design decision that we are proposing at this stage of system's
+  evolution. We have no firm opinion whether bindings within the same hand
+  should be allowed or not at this moment.
+
+The following table lists allsubject mode combinations for creating an edge
+between objects in the binary actuator. Let's assume the effective subject
+on one hand having slots $s$ and $i$, and the effective subject on the other hand
+having slot $t$.
+
+-------------------------------------------------------------------------------
+Effective             Effective                Edge
+subject               target
+--------------------- ------------------------ --------------------------------
+$\text{direct}$       $\text{none}$                 _removed_
+
+$\text{direct}$       $\text{other}$           $s\rightarrow \text{other}$
+
+$\text{direct}$       $\text{in\_other}(t)$    $s\rightarrow \text{other}.t$
+
+$\text{indirect}(i)$  $\text{none}$                 _removed_
+
+$\text{indirect}(i)$  $\text{other}$           $s.i\rightarrow \text{other}$
+
+$\text{indirect}(i)$  $\text{in\_other}(t)$    $s.i\rightarrow \text{other}.t$
+-------------------------------------------------------------------------------
+
+
+### Transition Modes Summary
+
+The following figure shows all possible graph transitions for edge creation for
+both unary and binary actuators:
+
+![Possible graph transitions for edge creation](images/binding-transitions)
 
 Binary modifier have limited ability to modify the state by design. Unbinding
 in a binary modifier can be achieved by a combination of binary state change
@@ -323,9 +481,7 @@ composed of multiple transitions that propagate through the network.
 Susceptibility to being affected by other actuators along the way is intended
 design feature.
 
-## Transition Modes
 
-The possible combinations of transitions are limited.
 
 # Simulation
 
@@ -535,4 +691,70 @@ Describe language here
 # Example: Linker
 
 Describe the "Linker" example here
+
+# Appendix: Symbols used
+
+-------------------------------------------------------------------------
+Symbol
+------------ ----------------------------------------------------------------
+$A$          actuator
+
+$A^1$        unary actuator
+
+$A^2$        binary actuator
+
+$G$          graph
+
+$\Gamma$     selector
+
+$M$          model
+
+$m$          subject mode
+
+$\mu$        transition target sepcifier
+
+$\mu^1$      unary transition target specifier
+
+$\mu^2$      binary transition target specifier
+
+$n$          signal
+
+$o$          object
+
+$O$          set of objects
+
+$p$          symbol presence
+
+$\Pi$        selector pattern
+
+$R$          set of relationships (graph edges)
+
+$S$          set of symbols
+
+$s$          symbol - any type
+
+$S^t$        set of symbols of type $t$
+
+$s^t$        symbol of type $t$
+
+$\sigma$     selector
+
+$\sigma_l$   selector for left subject
+
+$\sigma_r$   selector for right subject
+
+$t$          symbol type
+
+$T$          transition
+
+$T^1$        unary transition
+
+$T^2$        binary transition
+
+$T^2_l$      binary transition for left target 
+
+$T^2_r$      binary transition for right target
+-------------------------------------------------------------------------
+
+Table: Symbols.
 
