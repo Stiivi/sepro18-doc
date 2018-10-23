@@ -4,8 +4,13 @@
 # SRC = $(wildcard *.md)
 #
 SRC = 00_title.md \
-	  main.md \
-#	  model.md \
+	  introduction.md \
+	  model.md \
+	  simulation.md \
+	  language.md \
+	  example-linker.md \
+	  rejected_ideas.md \
+	  appendix-symbols.md
 
 
 TARGET_NAME = Sepro
@@ -42,7 +47,7 @@ OUTPUT_DIR = docs
 
 # Text sources
 # 
-SRC_DIR = chapters
+SRC_DIR = text
 HTML_IMAGES_DIR = $(OUTPUT_DIR)/images
 
 ALL_SRC = $(addprefix $(SRC_DIR)/,$(SRC))
