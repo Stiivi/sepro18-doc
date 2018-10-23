@@ -35,9 +35,6 @@ PDF_FLAGS = --default-image-extension=pdf \
 			--listings \
 			$(FLAGS)
 
-#			-H "$(STYLE_DIR)/make-code-scriptsize.tex" \
-#			--highlight-style=espresso \
-
 OUTPUT_DIR = docs
 
 # Do not edit below this line
