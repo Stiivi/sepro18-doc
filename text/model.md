@@ -1,4 +1,8 @@
-# The Model
+---
+title: Model
+---
+
+# Model
 
 The modeled universe comprises of a system's state and description of the
 system's dynamics. The state is a graph where we call nodes _objects_ which
@@ -20,7 +24,7 @@ state.
 
 Definition
 
-: Symbol table $\S\rightarrow t$ is a mapping between a symbol and it's type:
+: Symbol table $S\rightarrow t$ is a mapping between a symbol and it's type:
 $$T:=s\rightarrow t|s\in{S},t=\begin{cases}\text{tag}\\\text{slot}\\\text{actuator}\end{cases}$$
   We say that a symbol $s^t$ is of type $t$ when $s^t\in{S}\wedge T(s^t)=t$.
   Set of symbols $S^t$ is a set where each symbol is of type $t$.
@@ -89,7 +93,6 @@ $\{s^\text{slot},o_t\}$ where the initial vertex is the object being evaluated.
 
 
 # Model Dynamics
-
 
 The main concepts for the model dynamics are:
 
@@ -284,7 +287,8 @@ effective subject. [^6]
 Definition
 
 : _Unary target specifier_ $\mu^1$ is a case:
-$$\mu^1:=\begin{cases}
+$$
+\mu^1:=\begin{cases}
 \text{unbind}\\
 \text{subject}\\
 \text{in\_subject}(S^\text{slot})\\
@@ -310,7 +314,7 @@ $\text{direct}$       $\text{none}$            _removed_
 
 $\text{direct}$       $\text{subject}$         $s\rightarrow \text{self}$
 
-$\text{direct}$       $\text{in\_subject}(t)$  $s\rightarrow t$
+$\text{direct}$       $\text{in\_subject}(t)$   $s\rightarrow t$
 
 $\text{direct}$       $\text{indirect}(t, w)$  $s\rightarrow t.w$
 
@@ -318,7 +322,7 @@ $\text{indirect}(i)$  $\text{none}$            _removed_
 
 $\text{indirect}(i)$  $\text{subject}$         $s.i\rightarrow \text{self}$
 
-$\text{indirect}(i)$  $\text{in\_subject}(t)$  $s.i\rightarrow t$
+$\text{indirect}(i)$  $\text{in\_subject}(t)$   $s.i\rightarrow t$
 
 $\text{indirect}(i)$  $\text{indirect}(t, w)$  _not atomic_
 -----------------------------------------------------------------------------

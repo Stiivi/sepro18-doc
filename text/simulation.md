@@ -41,7 +41,7 @@ During the simulation step the following happens:
     applied to their respective effective subjects.
 * Control signals are gathered and provided to the simulation controller or
     observer.
-    
+
 As mentioned above, the order how the actuators, their evaluation and
 application is  executed is left to the concrete implementation of the
 simulation engine. The decision whether the simulation is performed in parallel
