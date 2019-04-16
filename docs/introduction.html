@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>introduction</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#system-design-principles">System Design Principles</a></li>
+</ul>
+</div>
+<p>Inspired by biochemistry.</p>
+<h1 id="introduction">Introduction</h1>
+<p>Objective of this project is to test alternative approach for simulation of network problems, examine possibility of purely qualitative approach, find primitives of non-conventional computation of network problem solving and develop a simulator prototype and set of models that demonstrate the system.</p>
+<h1 id="system-design-principles">System Design Principles</h1>
+<p>Development of a system for modeling network complexity is non-trivial as assumptions based on our more sophisticated knowledge might start creeping into the design process. Such assumption creep can corrupt the system and therefore the outcome of the models. As we don’t foresee yet how the ultimate design looks like, we will use evolutionary iterative approach to the design process. To stay on track, we constrain our evolutionary process by design principles:</p>
+<ul>
+<li><em>Completeness and clarity of model description</em>. The model described by the system has to be complete and should not require other information than the system specification to be understood.</li>
+<li><em>Minimal set of assumptions.</em> Assumptions for behaviour or structure should be kept to minimum. System should provide only primitives and basic mechanisms from which more complex behavior or structure is to be composed. The primitives should be as simple as possible. New features should be evaluated carefully whether they can’t be implemented using existing mechanisms. If they can, they should be omitted.</li>
+<li><em>No explicit control flow.</em> There should be no mechanisms in the system that would guarantee model creators control flow (evaluation order) in atomic way. Model-specific order should always be vulnerable for potential interference from another model that might be composed.</li>
+<li><em>Iterative simulation.</em> Modeled system’s state changes iteratively through state transitions. Absolute time (number of steps) is not observable to the model.</li>
+<li><em>Parallel.</em> All components of the model are assumed to operate in parallel fashion even though the system’s implementation might be fully or partially serial. Effects of serial computation to the simulation result is considered an inevitable error of the concrete implementation of the system. Model results should carry the information about the nature of the computation engine.</li>
+</ul>
+</article>
+</body>
+</html>

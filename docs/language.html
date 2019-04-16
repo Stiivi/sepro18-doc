@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>language</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#language">Language</a><ul>
+<li><a href="#model-and-model-objects">Model and Model Objects</a></li>
+<li><a href="#symbols">Symbols</a></li>
+<li><a href="#structures">Structures</a></li>
+<li><a href="#worlds">Worlds</a></li>
+<li><a href="#actuators">Actuators</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="language">Language</h1>
+<p>For the Sepro system we propose a domain specific modeling language. The language convers three aspects of the model: object prototypes, initial graph structures and simlator or observer related information.</p>
+<h2 id="model-and-model-objects">Model and Model Objects</h2>
+<p>The model is a list of model objects: symbol definitions, actuators and structures.</p>
+<p><em>model</em> = { <em>model_object</em> }</p>
+<p><em>model_object</em> = <em>symbol_definition</em> | <em>unary_actuator</em> | <em>binary_actuator</em> | <em>structure</em></p>
+<h2 id="symbols">Symbols</h2>
+<p>The <em>symbol</em> is an identifier that can contain letters, decimal digits or the underscore <code>_</code> character. It can not start with a digit. For example <code>open</code>, <code>next</code>, <code>site_a</code>, <code>site_b</code>.</p>
+<p>Each symbol in the model represents an instance of a type. There can be only one type associated with a symbol within the model. Type of a symbol can be specified explicitly or is determined by the compiler from the first use of the symbol in the model. Use of a symbol for different types results in an error. For example if a symbol is used as a tag it can not be used to label a relationship between objects.</p>
+<p>Examples of explicity symbol definitions:</p>
+<pre class="sepro"><code>DEF TAG open
+DEF TAG closed
+DEF SLOT next
+DEF SLOT site_a</code></pre>
+<p>Grammar:</p>
+<p><em>symbol_definition</em> = <code>"DEF"</code> <em>symbol_type</em> <em>symbol</em> <em>symbol_type</em> = <code>"SLOT"</code> | <code>"TAG"</code> | <code>"STRUCT"</code> | <code>"ACTUATOR"</code></p>
+<p>When an indirect symbol needs to be specified we use the <code>.</code> (dot) symbol qualification:</p>
+<p><em>qualified_symbol</em> = [<em>symbol</em> <code>"."</code>] <em>symbol</em></p>
+<h2 id="structures">Structures</h2>
+<p>Structure is a definition of a group of objects - a subgraph, that can be used to initialize the world. Structure contains list of objects and bindings (edges).</p>
+<p><em>struct</em> = <code>"STRUCT"</code> <em>symbol</em> { <em>struct_item</em> }</p>
+<p><em>struct_item</em> = <em>object</em> | <em>binding</em></p>
+<p>Structure objects have identifiers that are valid withing the scope of the structure. The identifiers are used to refer to objects in the structure binding specification.</p>
+<p><em>object</em> = <code>"OBJ"</code> <em>symbol</em> <code>"("</code> { <em>symbol</em> } <code>")"</code></p>
+<p>The bindings within structure can refer to objects within the same structure:</p>
+<p><em>binding</em> = <code>"BIND"</code> <em>symbol</em> <code>"."</code> <em>symbol</em> <code>"TO"</code> <em>symbol</em></p>
+<p>Example:</p>
+<pre class="sepro"><code>STRUCT triangle
+    OBJ a (node)
+    OBJ b (node)
+    OBJ c (node)
+    BIND a.next -&gt; b
+    BIND b.next -&gt; c
+    BIND c.next -&gt; a</code></pre>
+<h2 id="worlds">Worlds</h2>
+<p><em>World</em> is a container specifying initial state of the simulation. It can be thought as a list of “ingredients of the simulation primordial soup”.</p>
+<p>In the language more worlds can be specified in the model, despite only one world being used as a starting state of the system. If more worlds are specified then the one with name <code>main</code> is used if not specified explicitly otherwise.</p>
+<p><em>world</em> = <code>"WORLD"</code> <em>symbol</em> { <em>world_item</em> }</p>
+<p><em>world_item</em> = <em>integer</em> <em>symbol</em></p>
+<p>For example the following world will yield 10 copies of structure <em>jar</em> and 10 objects (out of structure) with tag <em>lid</em>:</p>
+<pre class="sepro"><code>WORLD main
+    10 jar
+    10 (lid)</code></pre>
+<h2 id="actuators">Actuators</h2>
+<p><em>selector</em> = <code>"ALL"</code> | <code>"("</code> { <em>symbol_presence</em> } <code>")"</code></p>
+<p><em>symbol_presence</em> = [<code>"!"</code>] <em>qualified_symbol</em></p>
+<p><em>unary_actuator</em> = <code>"ACT"</code> <em>symbol</em> <code>"WHERE"</code> <em>selector</em> { <em>unary_transition</em> }</p>
+<p><em>unary_transition</em> = <code>"IN"</code> <em>unary_subject</em> { <em>modifier</em> }</p>
+<p><em>unary_subject</em> = <code>"THIS"</code> [<code>"."</code> <em>symbol</em>] | <em>symbol</em></p>
+<p><em>modifier</em> = <code>"BIND"</code> <em>symbol</em> <code>"TO"</code> <em>qualified_symbol</em> | <code>"UNBIND"</code> <em>symbol</em> | <code>"SET"</code> <em>symbol</em> | <code>"UNSET"</code> _symbol</p>
+<p><em>binary_actuator</em> = <code>"REACT"</code> <em>symbol</em> <code>"WHERE"</code> <em>selector</em> <code>"ON"</code> <em>selector</em> { <em>binary_transition</em> }</p>
+<p><em>binary_transition</em> = <code>"IN"</code> <em>binary_subject</em> { <em>modifier</em> }</p>
+<p><em>binary_subject</em> = (<code>"LEFT"</code> | <code>"RIGHT"</code>) [<code>"."</code> <em>symbol</em>]</p>
+</article>
+</body>
+</html>

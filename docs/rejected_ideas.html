@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>rejected_ideas</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#rejected-ideas">Rejected Ideas</a><ul>
+<li><a href="#root-object">Root Object</a></li>
+<li><a href="#counters">Counters</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="rejected-ideas">Rejected Ideas</h1>
+<p>The ideas listed here were either rejected or postponed for further re-consideration or re-design.</p>
+<h2 id="root-object">Root Object</h2>
+<p>The <em>root object</em> served as a globally referencable state. From simulation dynamics perspective it was no different to any other object. The only difference with other objects was that the root object could be referenced explicitly by a symbol <code>ROOT</code>. Objects were able to react with the root object through binary selectors where one of the selector operands was a root object.</p>
+<p>From the original proposal:</p>
+<blockquote>
+<p>There might be situations where we need to consider a global state in a simulation. For that purpose there is one special object that we call <em>root</em>. It is the only object that can be explicitly globally referenced. Every simulation has a root object, event-though it might be unused. Default root object is empty, has no properties and no slots.</p>
+</blockquote>
+<p>The idea was rejected because we want to work with local interactions only. Having a global state would open possibility to compromise the local interaction principle.</p>
+<h2 id="counters">Counters</h2>
+<p><em>Counters</em> were quantitative properties of an object. The quantity stored is a number of instances of countable quality associated with the object. A counter can be imagined as a container able to hold multiple copies of the same tag. The only difference is that the <em>counter</em> is a static property of an object.</p>
+<p>Counters, as originally designe, were static properties can not be dis-associated from neither associated with an object during run time. Counters can be changed by incrementing or decrementing their values. Counters can be cleared to be zero and they can be tested whether they are zero.</p>
+<p>Counters were temporarily rejected because they can be partially implemented through existing mechanisms. Whether counters should remain in the model or not is still open for dicsussion and more research is needed.</p>
+</article>
+</body>
+</html>

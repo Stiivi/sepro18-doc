@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>example-linker</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#example-linker">Example: Linker</a></li>
+</ul>
+</div>
+<h1 id="example-linker">Example: Linker</h1>
+<p>We made a simple example for the purpose of demonstration of the language that we call ‘Linker’. The model has two kinds of objects: a <code>link</code> node and a ‘catalyst’ we call <code>linker</code>. The linker has two sites: <code>site_a</code> and <code>site_b</code>. The objective is to create chains of links when we put the linker and couple of links into the simulation container.</p>
+<p>The proposed process is:</p>
+<ul>
+<li>bind one site of the linker to a free link</li>
+<li>bind another site of the linker to another free link</li>
+<li>when both sites are bound then bind the links together</li>
+<li>release one link and free the site</li>
+<li>continue from binding another link to the free site</li>
+</ul>
+<p>The program listing below contains actuators that satisfy the process above. One might have noticed that the example contains explicit order specified by transition of the linker through</p>
+<pre class="sepro"><code>DEF SLOT site_a
+DEF SLOT site_b
+DEF SLOT next
+DEF TAG linker
+DEF TAG link
+
+REACT primer
+    WHERE (linker !site_a)
+    ON (free link)
+    IN LEFT
+        BIND site_a TO other
+        SET wait_right
+
+    IN RIGHT
+        UNSET Free
+
+REACT _wait_right
+    WHERE (wait_right)
+    ON (free link)
+    IN left
+        BIND site_b TO other
+        UNSET wait_right
+        SET chain
+    IN right 
+        UNSET free
+
+ACT _chain
+    WHERE (chain)
+    IN this
+        UNSET chain
+        SET advance
+    IN this.site_a
+        BIND next TO site_b
+
+ACT _advance
+    WHERE (advance)
+    IN this
+        BIND site_a TO site_b
+        UNSET advance
+        SET cleanup
+
+ACT _cleanup
+    WHERE (cleanup)
+    IN this
+        BIND site_b TO none
+        UNSET cleanup
+        SET wait_right
+
+WORLD main
+    30 (free link)
+    3 (linker)
+</code></pre>
+</article>
+</body>
+</html>

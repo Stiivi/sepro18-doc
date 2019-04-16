@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>simulation</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#simulation">Simulation</a><ul>
+<li><a href="#sequential-scan-simulation-method">“Sequential Scan” Simulation Method</a></li>
+<li><a href="#control-signaling">Control Signaling</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="simulation">Simulation</h1>
+<p>The simulation is virtually indefinite iterative evaluation of the model’s actuators that operate on system’s state.</p>
+<p>Given inspiration in biochemistry, the nature of the Sepro system does not impose any evaluation order of the actuators and selection order of objects. However, to be able to perform the simulation on Von-Neumann computer architecture which is sequential, we need to define the order of events in the simulation, and understand it’s impact on the simulation result. The emphasis is more on the explicit impact description than on the actual order definition. The evaluation order is a meta-problem that we are not trying to solve yet, but we need to propose few solution to start with.</p>
+<dl>
+<dt>Assumption</dt>
+<dd><p>In this evolutionary step of the system we consider the time to be unified globally. That means that time is the same for every entity of the system.</p>
+</dd>
+</dl>
+<p>Having global time of discrete nature, we can refer to each state by global time reference <em>t</em> and can say that state of the system at time <em>t</em> is described as a state of objects and bindings at time <em>t</em>.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p>Simlation step <span class="math inline">\(\Delta\)</span> is an approximation of system’s transition in form of a function <span class="math display">\[G^{t+1}=\Delta(G^t, M)\]</span> where <span class="math inline">\(G^0\)</span> is the graph <span class="math inline">\(G\)</span> from the model <span class="math inline">\(M\)</span>.</p>
+</dd>
+</dl>
+<p>We have to keep in mind that the <span class="math inline">\(\Delta\)</span> is not a true simulation mechanism, just an approximation. It is so due to the assumption of global time and potential effects of linearization.</p>
+<p>During the simulation step the following happens:</p>
+<ul>
+<li>Every unary actuator is tested against each object and the associated unary transition is applied to the objects that match the actuator’s selector.</li>
+<li>For every binary actuator a cartesian product of objects matching left selector and right selector is determined and binary transitions are applied to their respective effective subjects.</li>
+<li>Control signals are gathered and provided to the simulation controller or observer.</li>
+</ul>
+<p>As mentioned above, the order how the actuators, their evaluation and application is executed is left to the concrete implementation of the simulation engine. The decision whether the simulation is performed in parallel and what kind of parallelism is used is an implementation choice of the simulation engine. It has to be remembered that, as mentioned before, the simulation might be highly sensitive to the order of execution.</p>
+<h2 id="sequential-scan-simulation-method">“Sequential Scan” Simulation Method</h2>
+<p>Here we propose a simple, quite primitive yet straightforward simulation method: <em>Sequential scans with actuators first</em>. This method performs the <em>simulation step</em> in a single thread and considers the time to be system-global.</p>
+<p>The simulation step can be described in a pseudo-language as:</p>
+<pre><code>    FOR actuator IN unary actuators DO:
+        evaluate unary actuator
+    
+    FOR actuator IN binary actuators DO:
+        evaluate binary actuator</code></pre>
+<p>We serialise the simulation process by applying the transitions of the system in the order as given by a lazy selection algorithm described below. The method is analogous to vertical and horizontal line scan of a CRT screen where an object can be seen as a point on the screen and where the beam traverses the points in fixed pattern. One simulation step can be modelled by a single full scan of the whole screen. Once the beam touches a point on the screen, it does not go back within the same full screen scan.</p>
+<p>The unary actuator scan is depicted in the following figure:</p>
+<figure>
+<img src="images/simulation-unary-scan.png" alt="Unary scan" style="width:25.0%" /><figcaption>Unary scan</figcaption>
+</figure>
+<p>The evaluation of unary actuator is a single pass through the lazy selection of objects matching actuator’s predicates:</p>
+<pre><code>selection := objects matching actuator selector
+    
+FOR object IN selection DO:
+    IF object matches selector:
+        apply actuator transitions to object</code></pre>
+<p>The binary actuator “scans” a cartesian product of the “left” and “right” selector of the actuator:</p>
+<figure>
+<img src="images/simulation-binary-scan.png" alt="Binary actuator - scan of cartesian product" style="width:30.0%" /><figcaption>Binary actuator - scan of cartesian product</figcaption>
+</figure>
+<p>The evaluation of the binary selector is as follows:</p>
+<pre class="pseudo"><code>selection L := GET objects matching left selector of actuator
+selection R := GET objects matching right selector of actuator
+
+FOR left IN L DO:
+    FOR right IN R DO:
+        IF left does not match left selector:
+            CONTINUE
+        IF right does not match right selector:
+            CONTINUE
+
+        apply transition to left and right</code></pre>
+<p>The inner conditions are to filter out objects that might have been already modified in the scan pass and might not fit the selection predicates any more.</p>
+<figure>
+<img src="images/simulation-binary-skip.png" alt="Binary actuator - skipping" style="width:35.0%" /><figcaption>Binary actuator - skipping</figcaption>
+</figure>
+<h3 id="known-issues">Known Issues</h3>
+<p>The scan method described above has two major factors that influence the the simulation’s outcome:</p>
+<ul>
+<li>Order in which actuators are evaluated.</li>
+<li>Order in which the objects are provided to the filter.</li>
+</ul>
+<p>Let’s consider two actuators A and B evaluated in the same order: first A then B. If an object does not match predicates of A, matches predicate for B and actuator B modifies the object in a way that it would match actuator A, the object is not evaluated again with the actuator A. We will call this <em>actuator order error</em>.</p>
+<p>Let’s consider order of objects <span class="math inline">\({o_1,o_2,\ldots,o_n}\)</span> and an actuator that by evaluating <span class="math inline">\(o_1\)</span> modifies <span class="math inline">\(o_2\)</span> in a way that <span class="math inline">\(o_3\)</span> will not match the actuator’s predicate (will lose candidacy, will not be visited). If we provide another order, for example reverse order, then <span class="math inline">\(o_2\)</span> will be visited. We will call this <em>object selection order error</em>.</p>
+<p>Here we suggest that how the simulation sub-steps are ordered must be known fact to the simulator user.</p>
+<p>For further research, it might be interesting to further investigate effect of ordering to the outcome of certain models. For example:</p>
+<ul>
+<li>Randomization of the actutors, including unary and binary.</li>
+<li>Randomization of the objects for each iteration and actuator.</li>
+<li>Object-first pass: the outer loop is object loop, the inner loops are actuator loops.</li>
+</ul>
+<p>In a potential virtual laboratory where one might test different kinds of ordering the controller might provide mechanisms to compare different outcomes based on the orderings. This investigation is out of scope of this article, left as an exercise to the reader.</p>
+<h3 id="parallel-evaluation">Parallel Evaluation</h3>
+<p>Massively parallel evaluation is the ultimate goal of the system as it closely mimics the behaviour in the real world. By <em>massively parralel</em> we mean one processing unit per object per actuator observing the relevant context of the unit-associateid object.</p>
+<p>Simplified parallelism can be achieved by splitting the object graph into smaller parts, performing partial evalutaions and then consolidating the results. This is a whole are to be explored as it opens many questions, such as:</p>
+<ul>
+<li>How to synchronise the simulation states?</li>
+<li>How to resolve potential modifier-predicate order conflicts?</li>
+<li>How to consolidate conflicting modifications?</li>
+<li>How the consolidation method affects the outcome of the simulation?</li>
+<li>Which parameters of the simulation configuration affect potential errors of the simulation and in which way?</li>
+</ul>
+<h2 id="control-signaling">Control Signaling</h2>
+<p>The language gives a possibility to provide signals to the simulator. Signals are triggered together with activation of the associated actuator. The control signalling has no direct effect on the model and it’s interpretation is given by the simulator. It can be thought as an action to communicate unidirectionally with the observer.</p>
+<p>There are three kinds of signals: <em>notify</em>, <em>trap</em> and <em>halt</em>. The <em>notify</em> and <em>trap</em> signals can carry a set of tags associated with them to provide more information to the signal handlers.</p>
+<ul>
+<li><code>NOTIFY</code> signals to the simulator and expectes no interruption of the simulation. State of the simulation must not be changed by the handler. Use case: monitor reached goals; trigger/start/stop measurement; visualize a state of interest</li>
+<li><code>TRAP</code> signals and interrupts the simulator, giving it possibility to resume the simulation after the signal has been handled. State of the simulation might be changed by the handler. Use case: goal reached and user interaction is expected; a product has been created</li>
+<li><code>HALT</code> signals to the simulator to terminate the simulation without possibility of resuming it. Use case: invalid state has been reached, resuming the simulation might yield non-sensical results; final state has been reached and resuming the simulation might affect the result in non-meaningful way.</li>
+</ul>
+</article>
+</body>
+</html>

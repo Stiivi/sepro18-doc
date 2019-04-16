@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Model</title>
+  <style>
+      code{white-space: pre-wrap;}
+      span.smallcaps{font-variant: small-caps;}
+      span.underline{text-decoration: underline;}
+      div.column{display: inline-block; vertical-align: top; width: 50%;}
+  </style>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<nav>
+  <div class="site-title">Sepro18</div>
+  <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="Sepro.pdf">PDF</a></li>
+  </ul>
+</nav>
+<article>
+<div id="toc">
+<ul>
+<li><a href="#model">Model</a></li>
+<li><a href="#model-dynamics">Model Dynamics</a><ul>
+<li><a href="#actuators">Actuators</a></li>
+</ul></li>
+</ul>
+</div>
+<h1 id="model">Model</h1>
+<p>The modeled universe comprises of a system’s state and description of the system’s dynamics. The state is a graph where we call nodes <em>objects</em> which have qualitative properties associated with them. The system’s dynamics is a collection of rules describing system’s behavior called <em>actuators</em>.</p>
+<p>To be able to refer to particular components of the model in a human readable form we use <em>symbols</em>. Each symbol can refer to either particular component of the model or a type of component.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p>Model is a tuple <span class="math inline">\(M:=(S, S\rightarrow t, A, G)\)</span> where <span class="math inline">\(S\)</span> is a set of symbols, <span class="math inline">\(S\rightarrow t\)</span> is a symbol type table where <span class="math inline">\(t\)</span> is a symbol type, <span class="math inline">\(A\)</span> is a collection of actuators and <span class="math inline">\(G\)</span> is a graph representing system’s state.</p>
+</dd>
+</dl>
+<figure>
+<img src="images/model.png" alt="Model" /><figcaption>Model</figcaption>
+</figure>
+<dl>
+<dt>Definition</dt>
+<dd><p>Symbol table <span class="math inline">\(S\rightarrow t\)</span> is a mapping between a symbol and it’s type: <span class="math display">\[T:=s\rightarrow t|s\in{S},t=\begin{cases}\text{tag}\\\text{slot}\\\text{actuator}\end{cases}\]</span> We say that a symbol <span class="math inline">\(s^t\)</span> is of type <span class="math inline">\(t\)</span> when <span class="math inline">\(s^t\in{S}\wedge T(s^t)=t\)</span>. Set of symbols <span class="math inline">\(S^t\)</span> is a set where each symbol is of type <span class="math inline">\(t\)</span>.</p>
+</dd>
+</dl>
+<p><em>Object</em> is indivisible entity representing an instance of relevant concept within simulated universe. It is a carrier of qualitative properties - <em>tags</em>. State of an object is denoted by a set of tags.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p>Object graph <span class="math inline">\(G\)</span> is labeled oriented multigraph of objects (edges) and relationships (vertices) <span class="math inline">\((O,R)\)</span>. Relationship is a tuple <span class="math inline">\(\{s^\text{slot},o\}\)</span> where <span class="math inline">\(s^\text{slot}\in S\)</span> and <span class="math inline">\(o\in O\)</span></p>
+</dd>
+<dt>Definition</dt>
+<dd><p>Object’s qualitative state is a set of symbols <span class="math inline">\(\{s^t_1, s^t_2, ..., s^t_n\} | s^t_i \in S^\text{tag}\)</span>. We will write it as <span class="math inline">\(\text{tags}(o)\)</span></p>
+</dd>
+</dl>
+<figure>
+<img src="images/object-tags.png" alt="Object tags" style="width:20.0%" /><figcaption>Object tags</figcaption>
+</figure>
+<p><em>Slot</em> is a relational property of an objects that references other objects. Slot is a label of an edge of the object graph. We will use the letter <span class="math inline">\(s\)</span> to denote a slot.</p>
+<dl>
+<dt>Proposition</dt>
+<dd><p>We say that object <span class="math inline">\(o\)</span> has slots <span class="math inline">\(\{s^s_1, s^s_2, ..., s^s_n\}\)</span> if there exist edges <span class="math inline">\(\{o,s^s_i\}\)</span>. We will write it as <span class="math inline">\(\text{slots}(o)\)</span></p>
+</dd>
+</dl>
+<figure>
+<img src="images/object-slots.png" alt="Object slots" style="width:25.0%" /><figcaption>Object slots</figcaption>
+</figure>
+<p>Before we proceed with the system’s dynamics, we need to define one more design concept of the system: <em>local context</em>.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Local context</em> of an object <span class="math inline">\(o\)</span> is a subgraph <span class="math inline">\(G^L\subseteq G\)</span> with all objects and relationships where object <span class="math inline">\(o\)</span> is the inital vertex.</p>
+</dd>
+</dl>
+<p>In other words, local conetxt of an object <span class="math inline">\(o\)</span> is a subgraph within a graph distance of 1 from the object <span class="math inline">\(o\)</span>.</p>
+<figure>
+<img src="images/local-context.png" alt="Local context" /><figcaption>Local context</figcaption>
+</figure>
+<p>Before we move on with defition of other concepts, we need to define how objects in the graph can be reffered to. We need to be able to refer to an object within the local context relatively to the object being considered for evalutaion.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Subject mode</em> is a relative reference to an object in the graph given initial object. <span class="math display">\[m:=\begin{cases}\text{direct}\\\text{indirect}(s^\text{slot})\end{cases}\]</span></p>
+</dd>
+</dl>
+<p><em>Subject mode</em> is used to determine which object will be used for pattern matching in the selector or for applying state transitions. We call the object that is to be used for evaluation <em>effective subject</em>. <em>Direct</em> subject mode means that the <em>effective subject</em> is the object being evaluated is to be considered. <em>Indirect</em> subject mode means that the <em>effective subject</em> is the object which is terminal vertex <span class="math inline">\(o_t\)</span> of the relationship <span class="math inline">\(\{s^\text{slot},o_t\}\)</span> where the initial vertex is the object being evaluated.</p>
+<h1 id="model-dynamics">Model Dynamics</h1>
+<p>The main concepts for the model dynamics are:</p>
+<ul>
+<li><em>Actuator</em> is a description of an atomic state transition of objects within the graph matching a pattern.</li>
+<li><em>Selector</em> is a match pattern or objects subject to transition</li>
+<li><em>Transition/Modifier</em> is a description of state change affects either object’s state or local relationships</li>
+</ul>
+<p>Pattern matching or state transitions can happen only within a <em>local context</em>. The <em>local context</em> is an intentional design limitation which restricts that object state and graph transitions can happen only within distance of 1 from the selected object. Assumption here is that if we want to reach an object with larger distance we have to use multiple steps and therefore be open for interference - which is desired by design.</p>
+<h2 id="actuators">Actuators</h2>
+<p>Actuators can be thought as declarations of graph rewrite rules combined with object state transitions. They are applied to the whole graph<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. We assume that all actuators operate on all objects at once.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
+<p>The graph can be modified either through a state of a single object or a state of two object in their hypothetical interaction.</p>
+<p>For observation and controlled simulation purposes the actuators have also a <em>control signallig</em> associated with them. We will discuss the control mechanism later.</p>
+<p><em>Unary Actuator</em> describes transition of object’s state and local relationships based on previous object’s state. Only object that matches a pattern or it’s direct neighbours can be affected.</p>
+<figure>
+<img src="images/actuator-unary.png" alt="Unary Actuator" style="width:30.0%" /><figcaption>Unary Actuator</figcaption>
+</figure>
+<p><em>Binary Actuator</em> is a conditioned transition of an object as a result of cartesian product of two objects matching two selector patterns. Either of two objects can undergo transition based on state of any of the objects in the cartesian product tuple.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Unary actuator</em> is a tuple <span class="math inline">\((\sigma, m\rightarrow T^1, n)\)</span> where <span class="math inline">\(\sigma\)</span> is a selector, <span class="math inline">\(m\)</span> is subject mode and <span class="math inline">\(T^1\)</span> is unary transition. <span class="math inline">\(n\)</span> is a control signal (as in “notification”).</p>
+</dd>
+</dl>
+<figure>
+<img src="images/actuator-binary.png" alt="Binary Actuator" style="width:30.0%" /><figcaption>Binary Actuator</figcaption>
+</figure>
+<p>Binary actuator is the only way how a new connections to potentially unrelated objects (no direct reference) might happen.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Binary actuator</em> is a tuple <span class="math inline">\((\sigma_l, \sigma_r, m_l\rightarrow T^2_l, m_r\rightarrow T^2_r, \Gamma)\)</span> where <span class="math inline">\(\sigma_l\)</span> and <span class="math inline">\(\sigma_r\)</span> are left and right selector respectively, <span class="math inline">\(T^2_l\)</span> and <span class="math inline">\(T^2_r\)</span> are left and right binary transitions on effective subject specified by left subject mode <span class="math inline">\(m_l\)</span> and right subject mode <span class="math inline">\(m_r\)</span> respectively. <span class="math inline">\(n\)</span> is a control signal.</p>
+</dd>
+</dl>
+<p>We would use the term <em>hand</em> to refer to the left or right selector or transition.</p>
+<p>Model language declaration of a binary actuator is:</p>
+<pre><code>REACT actuator_name
+    WHERE (selector_patterns)
+        ON (selector_patterns)
+        DO binary_transitions</code></pre>
+<h3 id="selector">Selector</h3>
+<p>Selector is a pattern description that matches properties of objects and their local context. Pattern is a collection of multiple predicates that test qualitative properties or existence of relationships of an object. An object matches a selector pattern when:</p>
+<ul>
+<li>a direct predicate matches the object</li>
+<li>an indirect predicate matches object’s direct neighbors</li>
+</ul>
+<p>The predicates can tets for:</p>
+<ul>
+<li>Tags associated with an object: true if <span class="math inline">\(\text{selector&#39;s tags}\subset\text{object’s tags}\)</span></li>
+<li>Tags not associated with an object: true if <span class="math inline">\(\text{object’s tags}\cap\text{selector’s
+tags}=\emptyset\)</span></li>
+<li>Graph contains an edge from a specific slot</li>
+<li>Graph does not contain an edge from a specific slot</li>
+</ul>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Selector</em> is a patter description <span class="math display">\[\sigma:=\begin{cases}\text{all}\\\text{match}(m\rightarrow \Pi)\end{cases}\]</span> where <span class="math inline">\(m\)</span> is a subject mode and <span class="math inline">\(\Pi\)</span> is a selector pattern. We say that object matches a selector when the selector is <span class="math inline">\(\text{all}\)</span> or when the <em>effective subjects</em> of the object match all the selector patterns <span class="math inline">\(\Pi\)</span>.</p>
+</dd>
+<dt>Definition</dt>
+<dd><p><em>Symbol presence</em> <span class="math inline">\(p\)</span> is a case <span class="math display">\[p:=\begin{cases}\text{present}\\\text{absent}\end{cases}\]</span>.</p>
+</dd>
+<dt>Definition</dt>
+<dd><p><em>Selector pattern</em> <span class="math inline">\(\Pi\)</span> is a tuple of mappings <span class="math inline">\((S^t\rightarrow p, S^s\rightarrow p)\)</span> where <span class="math inline">\(p\)</span> is symbol’s presence. An object matches the selector pattern if all of the following are true: <span class="math display">\[
+\begin{aligned}
+&amp; \ \{s^t|s^t\rightarrow \text{present}\} \subset \text{tags}(o) \\
+\wedge &amp; \ \text{tags}(o) \cap \{s^t|s^t\rightarrow \text{absent}\}=\emptyset \\
+\wedge &amp; \ \{s^s|s^s\rightarrow \text{present}\} \subset \text{slots}(o) \\
+\wedge &amp; \ \text{slots}(o) \cap \{s^s|s^s\rightarrow \text{absent}\}=\emptyset\end{aligned}
+\]</span></p>
+</dd>
+</dl>
+<p>The language representation of the selector pattern is either a word <code>ALL</code> or a list of symbols. Assume we have symbols <code>open</code>, <code>empty</code> referring to tags and symbol <code>next</code> referring to a slot. For example the selector in the following actuator matches all objects that have tag <code>open</code> set, have no <code>empty</code> tag set and there exists a relationship at slot <code>next</code> from the object:</p>
+<pre><code>WHERE (open, !empty, next) ...</code></pre>
+<p>All symbols are considered to be in direct subject mode by default. Indirect subject mode in the selector can be represented by object qualifier “dot” operator as <code>indirection.symbol</code><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. For example:</p>
+<pre><code>WHERE next.open ...</code></pre>
+<p>The above matches an object where an object referred through slot <code>next</code> has a tag <code>open</code> set.</p>
+<h3 id="state-transitions">State Transitions</h3>
+<p>State transitions (further just <em>transitions</em>) are descriptions of qualitative changes of the object graph. They operate on objects and their neighbors within their local context. Proposed transitions are non-divisable primitives we assume being sufficient for any desired graph state transformations when composition of the transitions is used.</p>
+<p>The concrete object that is subject to transition is called <em>effective subject</em> of the transition and is determined by the subject mode in the actuator.</p>
+<p>There are two kinds of transitions: qualitative state of an object and qualitative state of the graph. The first one operates on object’s qualitative properties - <em>tags</em> and the later operates on graph’s relationships. The tags can be associated or disassociated from an object. The relationships can be <em>bound</em> and <em>unbound</em> within the local context of the effective subject.</p>
+<h3 id="unary-transition">Unary Transition</h3>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Unary transition</em> is a tuple <span class="math inline">\(T^1=(S^\text{tag}\rightarrow p,S^\text{slot}\rightarrow \mu^1)\)</span> where the first element is a qualitative transition of the effective subject and the second element is a graph edge change from the effective subject to effective target as described by the unary target specifier <span class="math inline">\(\mu^1\)</span>.</p>
+</dd>
+</dl>
+<p>If the <span class="math inline">\(p = \text{present}\)</span> then the <span class="math inline">\(S^\text{tag}\)</span> is associated with the effective subject. If the <span class="math inline">\(p = \text{absent}\)</span> then the <span class="math inline">\(S^\text{tag}\)</span> is dissociated with the effective subject. <a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a></p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Unary target specifier</em> <span class="math inline">\(\mu^1\)</span> is a case: <span class="math display">\[
+\mu^1:=\begin{cases}
+\text{unbind}\\
+\text{subject}\\
+\text{in\_subject}(S^\text{slot})\\
+\text{indirect}(S^\text{slot},S^\text{slot})\\
+\end{cases}\]</span> The <span class="math inline">\(\text{unbind}\)</span> case specifies that the edge from the effective subject is to be removed. <span class="math inline">\(\text{subject}\)</span> denotes that the target is the effective subject itself, therefore creating a self-loop. Effective target of the <span class="math inline">\(\text{in\_subject}\)</span> case is the object referred by the specified slot from the effective subject. The <span class="math inline">\(\text{indirect}\)</span> effective target is an object reffered to by the path of two slots from the effective subject.</p>
+</dd>
+</dl>
+<p>The above gives us the following potential subject mode combinations for creating an edge using unary actuator. Let’s assume the effective subject having slots <span class="math inline">\(s\)</span> and <span class="math inline">\(t\)</span>, and the object referred to by slot <span class="math inline">\(s\)</span> having slot <span class="math inline">\(i\)</span>, object referred to by slot <span class="math inline">\(t\)</span> having slot <span class="math inline">\(w\)</span>.</p>
+<table>
+<colgroup>
+<col style="width: 28%" />
+<col style="width: 32%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Effective subject</th>
+<th style="text-align: left;">Effective target</th>
+<th style="text-align: left;">Edge</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{none}\)</span></td>
+<td style="text-align: left;"><em>removed</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{subject}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s\rightarrow \text{self}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{in\_subject}(t)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s\rightarrow t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(t, w)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s\rightarrow t.w\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{none}\)</span></td>
+<td style="text-align: left;"><em>removed</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{subject}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s.i\rightarrow \text{self}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{in\_subject}(t)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s.i\rightarrow t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(t, w)\)</span></td>
+<td style="text-align: left;"><em>not atomic</em></td>
+</tr>
+</tbody>
+</table>
+<dl>
+<dt>Constraint</dt>
+<dd><p>Indirection of effective subject and effective target is not permitted, as the operation can be achieved by by composing two separate actuators: one for pulling indirect object closer to the effective subject and second for performing indirect bind to the pulled-in subject and unbinding the subject.</p>
+</dd>
+</dl>
+<h3 id="binary-transition">Binary Transition</h3>
+<p>Binary transition is analogous to the unary transition with one difference: the effective target specifier can specify one of the two “hands” of the selector.</p>
+<p>Effective subject of the binary transition is the subject selected by corresponding hand selector. For the left hand selector <span class="math inline">\(\sigma_l\)</span> the corresponding transition is <span class="math inline">\(T^2l\)</span> and the effective subject of the transition is the subject determined by <span class="math inline">\(\sigma_l\)</span>. Analogously for the right hand transition the effective subject is determined by the <span class="math inline">\(\sigma_r\)</span>.</p>
+<p>Transition hand can affect only qualities of the effective subject on the same hand similarly to unary transition. Although transition hand can have effective target from the same hand or from the other hand. This allows us to create new relationships between objects that are from disconnected parts of the graph. We refer to the effective subject from the other selector simply as <span class="math inline">\(\text{other}\)</span>.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Binary transition</em> is a tuple <span class="math inline">\(T^1=(S^\text{tag}\rightarrow p,S^\text{slot}\rightarrow \mu^2)\)</span> where the first element is a qualitative transition of the effective subject and the second element is a graph edge change from the effective subject to effective target as described by the binary target specifier <span class="math inline">\(\mu^2\)</span>.</p>
+</dd>
+</dl>
+<p>The first element of the tuple for tags is the same as the mapping in the unary transition.</p>
+<dl>
+<dt>Definition</dt>
+<dd><p><em>Binary target specifier</em> <span class="math inline">\(\mu^2\)</span> is a case: <span class="math display">\[\mu^1:=\begin{cases}
+\text{unbind}\\
+\text{other}\\
+\text{in\_other}(S^\text{slot})\\
+\end{cases}\]</span> The <span class="math inline">\(\text{unbind}\)</span> case specifies that the edge from the effective subject is to be removed. <span class="math inline">\(\text{other}\)</span> denotes that the target is the effective subject of the other hand. Effective target of the <span class="math inline">\(\text{in\_other}\)</span> case is the object referred by the specified slot from the other hand’s effective subject.</p>
+</dd>
+</dl>
+<p>Note that there is no indirection in the binary transition as it can be achieved by composing multiple transitions. Neither there is possibility to create binding within the same effective subject as it can be achieved by composing as well <a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>.</p>
+<p>The following table lists allsubject mode combinations for creating an edge between objects in the binary actuator. Let’s assume the effective subject on one hand having slots <span class="math inline">\(s\)</span> and <span class="math inline">\(i\)</span>, and the effective subject on the other hand having slot <span class="math inline">\(t\)</span>.</p>
+<table>
+<colgroup>
+<col style="width: 27%" />
+<col style="width: 31%" />
+<col style="width: 41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Effective subject</th>
+<th style="text-align: left;">Effective target</th>
+<th style="text-align: left;">Edge</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{none}\)</span></td>
+<td style="text-align: left;"><em>removed</em></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{other}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s\rightarrow \text{other}\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{direct}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{in\_other}(t)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s\rightarrow \text{other}.t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{none}\)</span></td>
+<td style="text-align: left;"><em>removed</em></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{other}\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s.i\rightarrow \text{other}\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\text{indirect}(i)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\text{in\_other}(t)\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(s.i\rightarrow \text{other}.t\)</span></td>
+</tr>
+</tbody>
+</table>
+<h3 id="transition-modes-summary">Transition Modes Summary</h3>
+<p>The following figure shows all possible graph transitions for edge creation for both unary and binary actuators:</p>
+<figure>
+<img src="images/binding-transitions.png" alt="Possible graph transitions for edge creation" /><figcaption>Possible graph transitions for edge creation</figcaption>
+</figure>
+<p>Binary modifier have limited ability to modify the state by design. Unbinding in a binary modifier can be achieved by a combination of binary state change and an unary <code>UNBIND</code> modifier. Indirection in the binary modifier can be achieved by a combination of binary direct subject state change and an unary modifier.</p>
+<p>Note that all state changes beyond distance of 1 from the selected object must be composed of multiple transitions that propagate through the network. Susceptibility to being affected by other actuators along the way is intended design feature.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>Here we assume only lowest level of the Sepro model without a constraints level. Higher levels as well as constraints are out of scope of this article.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p></li>
+<li id="fn2" role="doc-endnote"><p>This is idealized assumption which has technical implementation limitations that we will discuss later.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩</a></p></li>
+<li id="fn3" role="doc-endnote"><p>Unlike in common general purpose programming languages, the indirection can not be chained as in <code>deep.deeper.deepest.symbol</code> due to the <em>local context</em> constraint.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩</a></p></li>
+<li id="fn4" role="doc-endnote"><p>Alternative and more readable or understandable way of specifying which tags are to be associated or disassociated with an object would be to use two sets of tags: <em>set</em> and <em>unset</em>. However if the intersection of the sets is non-empty, the behaviour would be undefined. Using the mapping we prevent such situation from happening by design.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩</a></p></li>
+<li id="fn5" role="doc-endnote"><p>This is a design decision that we are proposing at this stage of system’s evolution. We have no firm opinion whether bindings within the same hand should be allowed or not at this moment.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩</a></p></li>
+</ol>
+</section>
+</article>
+</body>
+</html>
