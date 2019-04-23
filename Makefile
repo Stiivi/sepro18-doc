@@ -14,6 +14,12 @@ CHAPTERS = \
 	  rejected_ideas \
 	  appendix-symbols
 
+# Reference to an online public repository with this book so each node page can
+# refer to it's source
+BOOK_SOURCE_ROOT = https://github.com/Stiivi/sepro18-paper
+BOOK_SOURCE_URL = $(BOOK_SOURCE_ROOT)/blob/master/
+BOOK_HISTORY_URL = $(BOOK_SOURCE_ROOT)/commits/master/
+
 TEXT_DIR := text
 IMAGES_DIR := images
 
@@ -63,6 +69,8 @@ HTML_FLAGS = --toc \
 			 --template="$(STYLE_DIR)/template.html" \
 			 --mathjax=$(MATHJAX) \
 			 -c "css/style.css" \
+			 -V book_source_url=$(BOOK_SOURCE_URL) \
+			 -V book_history_url=$(BOOK_HISTORY_URL)
 
 HTML_IMAGES_DIR = $(OUTPUT_DIR)/images
 HTML_IMAGES = $(addprefix $(OUTPUT_DIR)/,$(patsubst %.pdf,%.png,$(IMAGES)))
