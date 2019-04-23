@@ -22,20 +22,12 @@
   <div class="site-title">Sepro18</div>
   <ul>
     <li><a href="index.html">Table of Contents</a></li>
-    <li><a href="https://github.com/Stiivi/sepro18-paper/blob/master//text/simulation.md">Page Source</a></li>
-    <li><a href="https://github.com/Stiivi/sepro18-paper/commits/master//text/simulation.md">Page Changes</a></li>
+    <li><a href="https://github.com/Stiivi/sepro18-doc/blob/master//text/simulation.md">Page Source</a></li>
+    <li><a href="https://github.com/Stiivi/sepro18-doc/commits/master//text/simulation.md">Page Changes</a></li>
     <li><a href="Sepro.pdf">PDF</a></li>
   </ul>
 </nav>
 <article>
-<div id="toc">
-<ul>
-<li><a href="#simulation">Simulation</a><ul>
-<li><a href="#sequential-scan-simulation-method">“Sequential Scan” Simulation Method</a></li>
-<li><a href="#control-signaling">Control Signaling</a></li>
-</ul></li>
-</ul>
-</div>
 <h1 id="simulation">Simulation</h1>
 <p>The simulation is virtually indefinite iterative evaluation of the model’s actuators that operate on system’s state.</p>
 <p>Given inspiration in biochemistry, the nature of the Sepro system does not impose any evaluation order of the actuators and selection order of objects. However, to be able to perform the simulation on Von-Neumann computer architecture which is sequential, we need to define the order of events in the simulation, and understand it’s impact on the simulation result. The emphasis is more on the explicit impact description than on the actual order definition. The evaluation order is a meta-problem that we are not trying to solve yet, but we need to propose few solution to start with.</p>

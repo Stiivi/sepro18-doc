@@ -16,7 +16,7 @@ CHAPTERS = \
 
 # Reference to an online public repository with this book so each node page can
 # refer to it's source
-BOOK_SOURCE_ROOT = https://github.com/Stiivi/sepro18-paper
+BOOK_SOURCE_ROOT = https://github.com/Stiivi/sepro18-doc
 BOOK_SOURCE_URL = $(BOOK_SOURCE_ROOT)/blob/master/
 BOOK_HISTORY_URL = $(BOOK_SOURCE_ROOT)/commits/master/
 

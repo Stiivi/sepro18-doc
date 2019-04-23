@@ -43,7 +43,7 @@ version](https://github.com/stiivi/sepro18/).
 
 * [Introduction Slides](https://www.slideshare.net/Stiivi/sepro-introduction)
 * [Sepro language implementation](https://github.com/stiivi/sepro18/)
-* [This document](https://github.com/stiivi/sepro18-paper/)
+* [This document](https://github.com/stiivi/sepro18-doc/)
 
 ----
 
