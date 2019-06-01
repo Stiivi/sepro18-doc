@@ -5,7 +5,7 @@ toc: false
 
 # Sepro18
 
-Sepro is a biochemistry inspired domain specific language. This is a documen
+Sepro is a biochemistry inspired domain specific language. This is a document
 describing concepts and implementation details behind behind its [2018
 version](https://github.com/stiivi/sepro18/).
 
